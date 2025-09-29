@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Activity Logging System</title>
+</head>
+<body>
+
+    <button type="button" id="countClicks">Click Me</button>
+    <form id="form" method="post">
+        <p>
+            <label for="fname">First Name:</label>
+            <input type="text" id="fname" name="fname" placeholder="Enter your first name" required>
+        </p>
+
+        <p>
+            <label for="lname">Last Name:</label>
+            <input type="text" id="lname" name="lname" placeholder="Enter your last name" required>
+        </p>
+        
+        <p>
+            <label for="email">Email:</label>
+            <input type="email" id="email" name="email" placeholder="Enter your email" required>
+        </p>
+
+        <input type="submit" value="Submit">
+        <input type="reset" value="Reset">
+
+    </form>
+
+    <script>
+
+        // Button click event logging
+        document.getElementById('countClicks').addEventListener('click', function() {
+            const eventData = {
+                type: "button_click",
+                timestamp: new Date().toISOString(),
+                metadata: { elementId: "countClicks" }
+            };
+            fetch("http://localhost:3000/log", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify(eventData)
+                })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error("Network response was not ok");
+                }
+                    return response.json();
+            })
+            .then(data => {
+                console.log("Event logged successfully:", data);
+            })
+            .catch(error => {
+                console.error("Error logging event:", error);
+            });
+        });
+
+
+    // Form submission event logging
+
+  const form = document.querySelector("form");
+
+
+  form.addEventListener("submit", (event) => {
+    event.preventDefault(); // prevent the form from doing a full page reload
+
+
+    const eventData = {
+      type: "form_submit",
+      timestamp: new Date().toISOString(),
+      metadata: {
+        formId: form.id || "mainForm",
+        fields: {
+          fname: document.getElementById("fname").value,
+          lname: document.getElementById("lname").value,
+          email: document.getElementById("email").value
+        }
+      }
+    };
+
+
+    fetch("http://localhost:3000/log", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(eventData)
+    })
+    .then(response => {
+      if (!response.ok) {
+        throw new Error("Network response was not ok");
+      }
+      return response.json();
+    })
+    .then(data => {
+      console.log("Form submission logged successfully:", data);
+    })
+    .catch(error => {
+      console.error("Error logging form submission:", error);
+    });
+  });
+
+
+
+  setInterval(() => {
+    fetch('http://localhost:3000/summary')
+      .then(r => r.json())
+      .then(s => console.log('Batch summary:', s))
+      .catch(err => console.error('Summary fetch failed:', err));
+  }, 120000);
+
+
+
+    </script>
+    
+</body>
+</html>
